@@ -35,8 +35,8 @@ const localData = {
 }
 
 const limelight = url => {
-    if (url.indexOf("http://") == 0 || url.indexOf("https://") == 0) url.replace(/https?:\/\//, `${window.location.protocol}\/\/`);
-    if (url.indexOf("http://") == -1 && url.indexOf("https://") == -1) url = `${window.location.protocol}//` + url;
+    if (url.indexOf("http://") == 0 || url.indexOf("https://") == 0) url.replace(/https?:\/\//, "http://");
+    if (url.indexOf("http://") == -1 && url.indexOf("https://") == -1) url = `http://${url}`;
 
     return {
         info: async () => (await $.post(`${url}/admin`, "type=info")),
@@ -312,9 +312,9 @@ if (view == "browse") {
     </div>
 </div>`;
 
-        tables.forEach(table => {
+        tables ? tables.forEach(table => {
             $("#browse_tables").append(template(table));
-        });
+        }) : ""
     })();
 }
 
@@ -322,22 +322,33 @@ if (view == "browse") {
 
 let currentQuery = "";
 
-$(".query_input_table_select").each(async (i, x) => {
-    const { tables } = (await limelight(localData.getSelected().url).read(localData.getSelected().password)).response;
+if (view == "query") {
+    $(".query_input_table_select").each(async (i, x) => {
+        const { tables } = (await limelight(localData.getSelected().url).read(localData.getSelected().password)).response;
+    
+        if (tables) tables.forEach(table => x.append($("<option></option>").attr("val", table.name).html(table.name)[0]));
+        else {
+            $("#query_btn_alter").attr("disabled", true);
+            $("#query_btn_select").attr("disabled", true);
+            $("#query_btn_insert").attr("disabled", true);
+            $("#query_btn_update").attr("disabled", true);
+            $("#query_btn_delete").attr("disabled", true);
 
-    tables.forEach(table => x.append($("<option></option>").attr("val", table.name).html(table.name)[0]));
-
-    $(`#${x.id}`).on("change", () => {
-        $(`#${x.id}_default`).remove();
-
-        if (x.id.indexOf("alter") != -1) query_alter_get_table();
-        if (x.id.indexOf("insert") != -1) query_insert_get_table();
-        if (x.id.indexOf("update") != -1) query_update_get_table();
-
-        $(`.query_table-dependent_${x.id.split("query_input_table_select_")[1]}`).each((i, x) => $(x).attr("disabled", false));
-        $("#query_execute").attr("disabled", false);
+            $("#query_btn_create").click();
+        }
+    
+        $(`#${x.id}`).on("change", () => {
+            $(`#${x.id}_default`).remove();
+    
+            if (x.id.indexOf("alter") != -1) query_alter_get_table();
+            if (x.id.indexOf("insert") != -1) query_insert_get_table();
+            if (x.id.indexOf("update") != -1) query_update_get_table();
+    
+            $(`.query_table-dependent_${x.id.split("query_input_table_select_")[1]}`).each((i, x) => $(x).attr("disabled", false));
+            $("#query_execute").attr("disabled", false);
+        });
     });
-});
+}
 
 $(".query_filter").each((i, x) => $(x).html(`(x =>
     // Your code here
@@ -483,7 +494,7 @@ $("#query_execute").click(async () => {
                 
                 var { tables } = (await limelight(localData.getSelected().url).read(localData.getSelected().password)).response;
 
-                if (tables.find(x => x.name == $("#query_create_table_name").val())) {
+                if (tables?.find(x => x.name == $("#query_create_table_name").val())) {
                     $("#query_response").html("<div class='alert alert-danger' role='alert'>Table name is already taken.</div>");
                     $("#query_response").show();
                     $("#query_execute").attr("disabled", false);
