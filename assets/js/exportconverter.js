@@ -30,9 +30,9 @@ function DBToCSV(db) {
         let csv = "";
 
         csv += x.cols.toString();
-        if (x.rows.length > 0 && x.rows[0].id && x.cols.indexOf("id") == -1) csv += ",id";
+        if (x.rows && x.rows.length > 0 && x.rows[0].id && x.cols.indexOf("id") == -1) csv += ",id";
         csv += "\n";
-        x.rows.forEach(x => {
+        x.rows?.forEach(x => {
             csv += Object.values(x);
             csv += "\n";
         });
