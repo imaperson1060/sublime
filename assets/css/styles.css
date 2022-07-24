@@ -1,0 +1,21 @@
+.addDB_container {
+    width: 30em !important;
+    left: 40%;
+    position: fixed;
+}
+
+#dashboard > .container {
+    min-height: 100%;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    height: 100px;
+    overflow: hidden;
+}
+
+.container {
+    height: 100vh !important;
+    overflow: auto;
+}

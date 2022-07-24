@@ -1,0 +1,13 @@
+{
+    "files": [
+        "assets/css/styles.css",
+        "assets/icon/lime.png",
+        "assets/icon/limelight-nolines.png",
+        "assets/icon/limelight.png",
+        "assets/js/exportconverter.js",
+        "assets/js/sublime.js",
+        "assets/js/switcher.js",
+        "index.html"
+    ],
+    "version": "3.1.0"
+}

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+
+        <title>Sublime Admin Panel</title>
+        <meta name="description" content="Sublime Admin Panel for Limelight">
+        <meta name="author" content="imaperson">
+        <meta property="og:image" content="/assets/icon/limelight.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="assets/icon/limelight-nolines.png">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+
+        <link rel="stylesheet" href="assets/css/styles.css">
+        <script src="assets/js/switcher.js" defer></script>
+        <script src="assets/js/exportconverter.js" defer></script>
+        <script src="assets/js/sublime.js" defer></script>
+    </head>
+    <body>
+        <main class="d-flex flex-nowrap">
+            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;height: 100vh;">
+                <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <img src="assets/icon/limelight-nolines.png" width="32">
+                    &nbsp;
+                    <span class="fs-4 lead">Sublime</span>
+                </a>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="?view=home" id="nav_home" class="btn btn-link nav-link text-white db-link">
+                            <i class="bi bi-house"></i>
+                            &nbsp;
+                            Home
+                        </a>
+                    </li>
+                    <li class="nav-item mb-4">
+                        <a href="?view=settings" id="nav_settings" class="btn btn-link nav-link text-white db-link disabled">
+                            <i class="bi bi-gear"></i>
+                            &nbsp;
+                            Settings - Coming soon
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="?view=dashboard" id="nav_dashboard" class="btn btn-link nav-link text-white db-link db-dependent">
+                            <i class="bi bi-speedometer2"></i>
+                            &nbsp;
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="?view=browse" id="nav_browse" class="btn btn-link nav-link text-white db-link db-dependent connection-dependent">
+                            <i class="bi bi-table"></i>
+                            &nbsp;
+                            Browse
+                        </a>
+                    </li>
+                    <li class="nav-item mb-4">
+                        <a href="?view=query" id="nav_query" class="btn btn-link nav-link text-white db-link db-dependent connection-dependent">
+                            <i class="bi bi-question-lg"></i>
+                            &nbsp;
+                            Query
+                        </a>
+                    </li>
+                    
+                    <span id="home_dashboard_nodatabase"></span>
+                </ul>
+                <hr>
+                <div class="dropdown">
+                    <button class="btn btn-link text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-file-bar-graph-fill"></i>
+                        <strong>Databases</strong>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                        <div id="home_dblist"></div>
+                        <li id="home_dblistseparator" style="display: none;">
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a href="?view=addDB" class="dropdown-item db-link">Add Database</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="view" class="container">
+                <br>
+
+                <div id="home" class="text-center">
+                    <h1 class="mb-4">Welcome to <i>Sublime Admin Panel</i>!</h1>
+
+                    <img src="assets/icon/limelight.png" style="border-radius: 50%;">
+                </div>
+
+                <div id="dashboard">
+                    <div class="mb-5">
+                        <h1><span id="dashboard_db_nick">Settings for <span class="spinner-border"></span></span></h1>
+                    </div>
+
+                    <div class="mb-5">
+                        <h5>Database information</h5>
+
+                        <div class="mb-3">
+                            <label for="dashboard_dburl" class="form-label">URL</label>
+                            <input id="dashboard_dburl" class="form-control" type="text" placeholder="" autocomplete="username">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dashboard_dbnick" class="form-label">Nickname</label>
+                            <input id="dashboard_dbnick" class="form-control" type="text" placeholder="">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dashboard_dbpassword" class="form-label">Password - <span id="dashboard_isPasswordValid"><span class="spinner-border spinner-border-sm"></span></span></label>
+                            <input id="dashboard_dbpassword" class="form-control" type="password" placeholder="[pretend the password is here]" autocomplete="password">
+                        </div>
+
+                        <span id="dashboard_editdb_error" class="text-danger"></span>
+
+                        <div class="mb-3">
+                            <button id="dashboard_editdb_submit" class="btn btn-primary mb-3" type="submit">Update <span id="dashboard_editdb_spinner" class="spinner-border spinner-border-sm" style="display: none;"></span></button>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <h5>Import/Export</h5> <span id="dashboard_isConnected"></span>
+
+                        <div class="input-group mb-3">
+                            <label for="dashboard_import" class="input-group-text">Import Backup - Coming Soon</label>
+                            <input id="dashboard_import" class="form-control" type="file" accept="application/json" disabled>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <button id="dashboard_export" class="btn btn-secondary" type="button">Export <span id="dashboard_export_spinner" class="spinner-border spinner-border-sm" style="display: none;"></span></button>
+                            <select id="dashboard_export_type" class="form-select">
+                                <option value="json" selected>JSON (compressed, good for backups)</option>
+                                <option value="json,y">JSON (human readable, good for inspecting database content)</option>
+                                <option value="xml">XML</option>
+                                <option value="csv">CSV (zip archive)</option>
+                                <option value="html" disabled>HTML - Coming Soon</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <h5>Remove database</h5>
+
+                        <button id="dashboard_rmdb" class="btn btn-danger">Remove database from Sublime</button>
+                    </div>
+
+                    <footer class="lead">Sublime v3.1.0 // &copy; Ima Person&trade; // <a href="https://imaperson.dev">imaperson.dev</a></footer>
+                </div>
+
+                <div id="browse">
+                    <h1>Browse</h1>
+                    <p class="lead mb-4">Double-click to edit coming soon!</p>
+
+                    <div id="browse_tables" class="accordion"></div>
+                </div>
+
+                <div id="query">
+                    <h1 class="mb-4">Query</h1>
+
+                    <div id="query_btn_group" class="btn-group mb-4" role="group">
+                        <input type="radio" id="query_btn_alter" class="btn-check" name="btn-radio">
+                        <label class="btn btn-outline-primary" for="query_btn_alter">Alter</label>
+
+                        <input type="radio" id="query_btn_select" class="btn-check" name="btn-radio">
+                        <label class="btn btn-outline-primary" for="query_btn_select">Select</label>
+
+                        <input type="radio" id="query_btn_create" class="btn-check" name="btn-radio">
+                        <label class="btn btn-outline-primary" for="query_btn_create">Create</label>
+
+                        <input type="radio" id="query_btn_insert" class="btn-check" name="btn-radio">
+                        <label class="btn btn-outline-primary" for="query_btn_insert">Insert</label>
+
+                        <input type="radio" id="query_btn_update" class="btn-check" name="btn-radio">
+                        <label class="btn btn-outline-primary" for="query_btn_update">Update</label>
+
+                        <input type="radio" id="query_btn_delete" class="btn-check" name="btn-radio">
+                        <label class="btn btn-outline-danger" for="query_btn_delete">Delete</label>
+                    </div>
+
+                    <div id="query_alter" class="query_input mb-4">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Table <span style="color: #ff2825">*</span></span>
+                            <select id="query_input_table_select_alter" class="form-select query_input_table_select" required>
+                                <option id="query_input_table_select_alter_default" selected disabled>Select a table...</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span id="query_alter_cols_text" class="input-group-text">Columns</span>
+                            <div id="query_alter_columns" class="form-control">
+                                <button id="query_alter_add_column" class="btn btn-primary form-control query_alter_table-dependent" disabled><i class="bi bi-plus-circle"></i> Add Column</button>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            <input type="checkbox" id="query_alter_autoid" class="form-check-input query_alter_table-dependent" disabled>
+                            <labal class="form-check-label" for="query_alter_autoid">AutoID (automatically assign numeric IDs to each row)</labal>
+                        </div>
+                    </div>
+
+                    <div id="query_select" class="query_input mb-4">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Table <span style="color: #ff2825">*</span></span>
+                            <select id="query_input_table_select_select" class="form-select query_input_table_select" required>
+                                <option id="query_input_table_select_select_default" selected disabled>Select a table...</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Filter <span style="color: #ff2825">*</span></span>
+                            <textarea id="query_select_filter" class="form-control query_table-dependent query_table-dependent_select query_filter" rows="10" spellcheck="false" required></textarea>
+                        </div>
+
+                        <div class="input-group">
+                            <span class="input-group-text">Limit</span>
+                            <input type="number" id="query_select_limit" class="form-control query_table-dependent query_table-dependent_select" min="0">
+                        </div>
+                    </div>
+
+                    <div id="query_create" class="query_input mb-4">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Table Name <span style="color: #ff2825">*</span></span>
+                            <input type="text" id="query_create_table_name" class="form-control" placeholder="Table Name...">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span id="query_create_cols_text" class="input-group-text">Columns <span style="color: #ff2825">*</span></span>
+                            <div id="query_create_columns" class="form-control">
+                                <button id="query_create_add_column" class="btn btn-primary form-control"><i class="bi bi-plus-circle"></i> Add Column</button>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            <input type="checkbox" id="query_create_autoid" class="form-check-input">
+                            <labal class="form-check-label" for="query_create_autoid">AutoID (automatically assign numeric IDs to each row)</labal>
+                        </div>
+                    </div>
+
+                    <div id="query_insert" class="query_input mb-4">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Table <span style="color: #ff2825">*</span></span>
+                            <select id="query_input_table_select_insert" class="form-select query_input_table_select" required>
+                                <option id="query_input_table_select_insert_default" selected disabled>Select a table...</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Columns</span>
+                            <div id="query_insert_columns" class="form-control"></div>
+                        </div>
+                    </div>
+
+                    <div id="query_update" class="query_input mb-4">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Table <span style="color: #ff2825">*</span></span>
+                            <select id="query_input_table_select_update" class="form-select query_input_table_select" required>
+                                <option id="query_input_table_select_update_default" selected disabled>Select a table...</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Filter <span style="color: #ff2825">*</span></span>
+                            <textarea id="query_update_filter" class="form-control query_table-dependent query_table-dependent_update query_filter" rows="10" spellcheck="false" required></textarea>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Columns</span>
+                            <div id="query_update_columns" class="form-control"></div>
+                        </div>
+                    </div>
+
+                    <div id="query_delete" class="query_input mb-4">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Table <span style="color: #ff2825">*</span></span>
+                            <select id="query_input_table_select_delete" class="form-select query_input_table_select" required>
+                                <option id="query_input_table_select_delete_default" selected disabled>Select a table...</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Filter <span style="color: #ff2825">*</span></span>
+                            <textarea id="query_delete_filter" class="form-control query_table-dependent query_table-dependent_delete query_filter" rows="10" spellcheck="false" required></textarea>
+                        </div>
+                    </div>
+
+                    <button id="query_execute" class="btn btn-primary mb-4" style="display: none;">Execute query <span id="query_execute_spinner" class="spinner-border spinner-border-sm" style="display: none;"></span></button>
+
+                    <div id="query_response" style="display: none;"></div>
+                </div>
+
+                <div id="addDB">
+                    <div class="container addDB_container">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <a href="https://imaperson.dev/limelight" target="_blank">
+                                    <img src="assets/icon/limelight.png" style="border-radius: 50%;" width="128" alt="Sublime">
+                                </a>
+
+                                <h1 class="mb-4">Welcome to Sublime</h1>
+
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        Log in
+                                    </div>
+                                    <div class="card-body">
+                                        <form onsubmit="return false;">
+                                            <div class="row mb-3">
+                                                <label for="addDB_input_url" class="col-sm-4 col-form-label">URL:</label>
+                                                <div class="col-sm-8">
+                                                    <input class="form-control" type="text" name="limelight_url" id="addDB_input_url" value="localhost" autocomplete="username" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="addDB_input_password" class="col-sm-4 col-form-label">Password:</label>
+                                                <div class="col-sm-8">
+                                                    <input class="form-control" type="password" name="limelight_password" id="addDB_input_password" autocomplete="password" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <label for="addDB_input_nickname" class="col-sm-4 col-form-label">Nickname:</label>
+                                                <div class="col-sm-8">
+                                                    <input class="form-control" type="text" name="limelight_nickname" id="addDB_input_nickname" value="" placeholder="(Default: Database URL)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <button id="addDB_input_submit" class="btn btn-primary">Connect</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div id="addDB_connerror_popup" class="alert alert-danger" role="alert" style="display: none;">
+                                    <span id="addDB_connerror"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
