@@ -4,10 +4,6 @@
     position: fixed;
 }
 
-#dashboard > .container {
-    min-height: 100%;
-}
-
 footer {
     position: absolute;
     bottom: 0;
